@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAMSAM - Váy Công Chúa Cho Bé & Trợ Lý AI Hoàng Gia</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f4', 100: '#ffe4e9', 200: '#fecdbe', 300: '#fda4af',
+                            400: '#fb7185', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c',
+                            800: '#9f1239', 900: '#4c0519', dark: '#26030d',
+                        },
+                        accent: {
+                            gold: '#FFD700', goldHover: '#E6C200', cta: '#FF5722', ctaHover: '#F4511E', purple: '#9333ea'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Animations */
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); }
+            50% { transform: scale(1.03); box-shadow: 0 0 35px rgba(255, 215, 0, 0.95); }
+        }
+        .animate-cta-pulse { animation: pulse-glow 2s infinite ease-in-out; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #ffe4e9; }
+        ::-webkit-scrollbar-thumb { background: #be123c; border-radius: 4px; }
+
+        /* --- EDIT MODE STYLES (CMS) --- */
+        .edit-mode .editable-text {
+            outline: 2px dashed #f43f5e;
+            outline-offset: 4px;
+            cursor: text;
+            border-radius: 4px;
+            transition: all 0.2s;
+            min-height: 1em;
+            display: inline-block;
+        }
+        .edit-mode .editable-text:hover {
+            background-color: rgba(244, 63, 94, 0.1);
+        }
+        .edit-mode .editable-media {
+            outline: 3px dashed #3b82f6;
+            outline-offset: -3px;
+            cursor: pointer;
+            position: relative;
+        }
+        .edit-mode .editable-media::after {
+            content: '📸 Nhấp để đổi Ảnh/Video';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+            white-space: nowrap;
+        }
+        .edit-mode .editable-media:hover::after {
+            opacity: 1;
+        }
+        
+        .edit-mode .editable-link {
+            outline: 2px dashed #10b981;
+            outline-offset: 2px;
+            cursor: pointer;
+        }
+        .edit-mode .editable-link:hover { background-color: rgba(16, 185, 129, 0.1); }
+    </style>
+</head>
+
+<body class="bg-[#FFF8F9] text-gray-800 font-sans antialiased selection:bg-brand-600 selection:text-white pt-12">
+
+    <!-- CMS ADMIN TOOLBAR (Visible always, hidden on export) -->
+    <div id="admin-toolbar" class="fixed top-0 left-0 w-full bg-gray-900 text-white z-[100] px-4 py-2 flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-4">
+            <span class="font-bold text-sm tracking-wide text-amber-400"><i class="fa-solid fa-pen-ruler"></i> CÔNG CỤ CHỈNH SỬA WEB</span>
+            <button id="toggle-edit-btn" onclick="toggleEditMode()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-1.5 rounded-full transition flex items-center gap-2">
+                <i class="fa-solid fa-toggle-off text-lg" id="edit-icon"></i> <span id="edit-text">Bật chế độ chỉnh sửa</span>
+            </button>
+        </div>
+        <div>
+            <button onclick="exportWebsite()" class="bg-green-500 hover:bg-green-400 text-white text-xs font-bold px-4 py-1.5 rounded-full transition shadow-md flex items-center gap-2">
+                <i class="fa-solid fa-download"></i> Lưu & Xuất File HTML
+            </button>
+        </div>
+    </div>
+
+    <!-- FLOATING CONTACT WIDGET (Zalo, Hotline, Chatbot, Socials) -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        <!-- Chatbot Box (Hidden by default, toggled via button) -->
+        <div id="chatbot-box" class="hidden bg-white w-80 sm:w-90 rounded-3xl shadow-2xl border border-brand-200 overflow-hidden transition-all duration-300 transform scale-95 opacity-0">
+            <div class="bg-gradient-to-r from-brand-800 to-brand-600 text-white p-4 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-accent-gold font-bold">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm">Trợ Lý SAMSAM AI</h4>
+                        <p class="text-[10px] text-brand-100 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Trực tuyến tư vấn</p>
+                    </div>
+                </div>
+                <button onclick="toggleChatbot()" class="text-white hover:text-brand-200 text-lg">&times;</button>
+            </div>
+            
+            <div id="chat-messages" class="p-4 h-64 overflow-y-auto bg-gray-50 flex flex-col gap-3 text-xs">
+                <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 max-w-[85%] self-start text-gray-700">
+                    👑 Chào Mẹ! Em là trợ lý SAMSAM. Mẹ đang tìm mẫu váy công chúa cho bé mấy tuổi và cân nặng bao nhiêu ạ?
+                </div>
+            </div>
+
+            <div class="p-3 bg-white border-t border-gray-100 flex items-center gap-2">
+                <input type="text" id="chat-input" placeholder="Nhập câu hỏi của mẹ..." class="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500" onkeypress="handleChatKey(event)">
+                <button onclick="sendChatMessage()" class="bg-brand-600 hover:bg-brand-700 text-white w-9 h-9 rounded-xl flex items-center justify-center transition"><i class="fa-solid fa-paper-plane text-xs"></i></button>
+            </div>
+        </div>
+
+        <!-- Floating Action Buttons -->
+        <div class="flex items-center gap-3">
+            <!-- Facebook Button -->
+            <a href="https://facebook.com" target="_blank" class="editable-link w-12 h-12 rounded-full bg-[#1877F2] text-white flex items-center justify-center shadow-lg hover:scale-110 transition text-xl" title="Trang Facebook SAMSAM" data-href-type="url">
+                <i class="fa-brands fa-facebook-f"></i>
+            </a>
+            <!-- TikTok Button -->
+            <a href="https://tiktok.com" target="_blank" class="editable-link w-12 h-12 rounded-full bg-black text-white flex items-center justify-center shadow-lg hover:scale-110 transition text-xl" title="Kênh TikTok SAMSAM" data-href-type="url">
+                <i class="fa-brands fa-tiktok"></i>
+            </a>
+            <!-- Zalo Button -->
+            <a href="https://zalo.me/0949213036" target="_blank" class="editable-link w-12 h-12 rounded-full bg-[#0068FF] text-white flex items-center justify-center shadow-lg hover:scale-110 transition text-xl animate-bounce" title="Chat Zalo 0949213036" data-href-type="url">
+                <i class="fa-solid fa-comment-dots"></i>
+            </a>
+            <!-- Chatbot Toggle Button -->
+            <button onclick="toggleChatbot()" class="w-14 h-14 rounded-full bg-gradient-to-r from-brand-600 to-pink-600 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition text-2xl animate-cta-pulse relative" title="Hỏi đáp AI">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span class="absolute -top-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 1. TOP ANNOUNCEMENT BAR -->
+    <div class="bg-gradient-to-r from-brand-900 via-brand-700 to-brand-900 text-white text-xs md:text-sm py-2 px-4 text-center font-medium tracking-wide flex justify-between items-center z-50 relative border-b border-brand-600/30 mt-0">
+        <div class="hidden md:flex items-center space-x-4 text-brand-200">
+            <span><i class="fa-solid fa-crown text-accent-gold mr-1"></i> <span class="editable-text">Thương Hiệu Váy Công Chúa 5 Sao</span></span>
+        </div>
+        <div class="mx-auto md:mx-0 font-bold text-accent-gold flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-green-400 animate-ping"></span>
+            <span class="editable-text">ƯU ĐÃI THÁNG HOÀNG GIA: TẶNG VƯƠNG MIỆN PHA LÊ CHO ĐƠN HÀNG HÔM NAY!</span>
+        </div>
+        <div class="hidden md:flex items-center space-x-4">
+            <a href="tel:0949213036" class="editable-link hover:text-accent-gold transition" data-href-type="tel"><i class="fa-solid fa-phone-volume mr-1"></i> <span class="editable-text">Hotline VIP: 0949213036</span></a>
+        </div>
+    </div>
+
+    <!-- 2. NAVIGATION HEADER -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-brand-100 shadow-sm transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-800 to-brand-500 flex items-center justify-center text-accent-gold font-serif text-xl font-bold shadow-md">S</div>
+                <div>
+                    <span class="font-serif text-2xl md:text-3xl font-black tracking-wider text-brand-900 block leading-none editable-text">SAMSAM<span class="text-brand-600">.</span></span>
+                    <span class="text-[9px] font-bold tracking-[0.25em] text-brand-700 uppercase block mt-1 editable-text">Váy công chúa cho bé 2-10 tuổi</span>
+                </div>
+            </a>
+            
+            <nav class="hidden lg:flex items-center space-x-8 font-semibold text-sm tracking-wide text-brand-900">
+                <a href="#hero" class="text-brand-600 editable-text">TRANG CHỦ</a>
+                <a href="#featured-products" class="hover:text-brand-600 editable-text">BST VÁY HOT</a>
+                <a href="#ai-stylist" class="text-purple-700 editable-text"><i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> AI PHỐI ĐỒ</a>
+            </nav>
+
+            <div class="flex items-center space-x-3 md:space-x-4">
+                <a href="https://vn.shp.ee/evnmc8ih" target="_blank" class="editable-link bg-gradient-to-r from-accent-gold via-amber-400 to-accent-gold text-brand-900 font-extrabold px-4 md:px-5 py-2.5 rounded-full text-xs md:text-sm uppercase tracking-wider shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5 border border-amber-200" data-href-type="url">
+                    <i class="fa-solid fa-bolt text-brand-700 mr-1"></i> <span class="editable-text">Mua Shopee</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 3. HERO BANNER SECTION -->
+    <section id="hero" class="relative overflow-hidden bg-gradient-to-b from-brand-100/60 via-brand-50 to-[#FFF8F9] pt-8 pb-14 md:pt-14 md:pb-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-12 gap-8 items-center">
+                
+                <div class="lg:col-span-6 space-y-6 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-brand-200 shadow-sm">
+                        <span class="flex text-accent-gold text-sm"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+                        <span class="text-xs font-extrabold tracking-wider uppercase text-brand-900 editable-text">Thương hiệu Đầm Công Chúa 5★</span>
+                    </div>
+
+                    <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-black text-brand-900 leading-[1.15] editable-text">
+                        Tỏa Sáng Như <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-pink-500 to-purple-700">Công Chúa Hoàng Gia</span>
+                    </h1>
+
+                    <p class="text-base sm:text-lg text-gray-700 font-medium max-w-xl mx-auto lg:mx-0 leading-relaxed editable-text">
+                        Dành riêng cho bé gái từ 2 đến 10 tuổi. Phong cách Hồng Cá Tính độc bản - Sử dụng lót lụa tơ tằm 100% cực kỳ êm ái, an toàn tuyệt đối.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+                        <a href="https://vn.shp.ee/evnmc8ih" target="_blank" class="editable-link animate-cta-pulse w-full sm:w-auto bg-gradient-to-r from-accent-gold via-yellow-400 to-amber-500 text-brand-900 font-black text-lg px-8 py-4 rounded-full shadow-cta-glow uppercase tracking-wider flex items-center justify-center gap-3 border-2 border-white" data-href-type="url">
+                            <i class="fa-solid fa-cart-shopping text-xl"></i>
+                            <span class="editable-text">MUA NGAY (GIẢM 30%)</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- HERO MEDIA (Image/Video Editable) -->
+                <div class="lg:col-span-6 relative mt-8 lg:mt-0">
+                    <div class="absolute -inset-4 bg-gradient-to-tr from-brand-300 via-pink-400 to-amber-300 rounded-[40px] blur-2xl opacity-40 -z-10 animate-pulse"></div>
+
+                    <!-- The wrapper receives clicks in edit mode -->
+                    <div class="editable-media block relative rounded-3xl overflow-hidden border-4 border-white shadow-2xl bg-white group cursor-pointer w-full h-[450px] sm:h-[550px]" data-classes="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
+                        <!-- Default content (Image) -->
+                        <img src="https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Váy công chúa" class="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
+                        
+                        <!-- Floating Badge -->
+                        <div class="absolute top-4 left-4 bg-brand-900/90 backdrop-blur-md text-white px-4 py-2 rounded-2xl flex items-center gap-2 shadow-lg border border-brand-400/30 z-10 pointer-events-none">
+                            <span class="text-accent-gold text-lg"><i class="fa-solid fa-award"></i></span>
+                            <div>
+                                <p class="text-[10px] uppercase tracking-widest text-brand-200 font-bold editable-text">Tiêu Chuẩn</p>
+                                <p class="text-xs font-black text-white editable-text">HAUTE COUTURE 5★</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. FEATURED CATALOG GRID -->
+    <section id="featured-products" class="py-16 md:py-24 bg-gradient-to-b from-white via-brand-50/50 to-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="text-xs font-black tracking-widest text-brand-700 uppercase bg-brand-100 px-4 py-1.5 rounded-full border border-brand-300 inline-flex items-center gap-1.5 editable-text">
+                    <i class="fa-solid fa-crown text-accent-gold"></i> BỘ SƯU TẬP VÁY CÔNG CHÚA
+                </span>
+                <h2 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-brand-900 mt-4 leading-tight editable-text">
+                    Những Mẫu Váy Yêu Thích Nhất
+                </h2>
+            </div>
+
+            <!-- Product Grid Container -->
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- PRODUCT CARD 1 -->
+                <div class="product-card bg-white rounded-3xl overflow-hidden border border-brand-200/80 shadow-lg hover:shadow-2xl transition duration-500 flex flex-col justify-between group">
+                    <div class="editable-media relative overflow-hidden bg-gray-100 w-full h-80" data-classes="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
+                        <img src="https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Váy Công Chúa" class="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
+                        
+                        <span class="absolute top-3 left-3 bg-gradient-to-r from-brand-600 to-pink-600 text-white text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-md z-10 pointer-events-none editable-text">
+                            🔥 MẪU MỚI
+                        </span>
+                    </div>
+
+                    <div class="p-6 flex-1 flex flex-col justify-between relative">
+                        <!-- Delete button (visible only in edit mode) -->
+                        <button class="delete-product-btn hidden absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full z-20 hover:bg-red-700" onclick="deleteProduct(this)" title="Xóa sản phẩm này"><i class="fa-solid fa-trash"></i></button>
+
+                        <div>
+                            <h3 class="editable-text font-serif text-lg font-black text-brand-900 group-hover:text-brand-600 transition leading-snug mb-2">
+                                Đầm Dạ Hội Công Chúa Cổ Tích Cao Cấp
+                            </h3>
+                            <p class="editable-text text-xs text-gray-600 line-clamp-3 mb-4">
+                                Thiết kế vai bồng thần tiên, tùng tơ organza cao cấp, phù hợp cho bé dự tiệc, biểu diễn văn nghệ.
+                            </p>
+                        </div>
+
+                        <div>
+                            <div class="flex items-baseline gap-2 mb-4">
+                                <span class="editable-text text-xl font-black text-brand-700">399.000đ</span>
+                                <span class="editable-text text-xs text-gray-400 line-through">580.000đ</span>
+                            </div>
+                            <a href="#" target="_blank" class="editable-link w-full bg-gradient-to-r from-accent-cta to-orange-600 text-white font-extrabold text-sm py-3 px-4 rounded-2xl shadow-md transition flex items-center justify-center gap-2" data-href-type="url">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                                <span class="editable-text">MUA NGAY TRÊN SHOPEE</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRODUCT CARD 2 (Video Demo) -->
+                <div class="product-card bg-white rounded-3xl overflow-hidden border border-brand-200/80 shadow-lg hover:shadow-2xl transition duration-500 flex flex-col justify-between group">
+                    <div class="editable-media relative overflow-hidden bg-black w-full h-80" data-classes="w-full h-full object-cover object-top transition duration-700 group-hover:scale-105">
+                        <!-- Use a video element for demo -->
+                        <video src="https://cdn.pixabay.com/video/2021/08/04/83908-585352618_tiny.mp4" autoplay loop muted playsinline class="w-full h-full object-cover object-center transition duration-700 group-hover:scale-105"></video>
+                        
+                        <span class="absolute top-3 left-3 bg-brand-800 text-white text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-md z-10 pointer-events-none editable-text">
+                            💖 BÁN CHẠY NHẤT
+                        </span>
+                    </div>
+
+                    <div class="p-6 flex-1 flex flex-col justify-between relative">
+                        <button class="delete-product-btn hidden absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full z-20 hover:bg-red-700" onclick="deleteProduct(this)" title="Xóa sản phẩm này"><i class="fa-solid fa-trash"></i></button>
+                        
+                        <div>
+                            <h3 class="editable-text font-serif text-lg font-black text-brand-900 group-hover:text-brand-600 transition leading-snug mb-2">
+                                Váy Công Chúa Hồng Đính Nơ (Có Video)
+                            </h3>
+                            <p class="editable-text text-xs text-gray-600 line-clamp-3 mb-4">
+                                Khách hàng có thể dễ dàng tải lên cả hình ảnh và video sản phẩm. Nhấp vào video phía trên trong chế độ chỉnh sửa để thay đổi!
+                            </p>
+                        </div>
+                        <div>
+                            <div class="flex items-baseline gap-2 mb-4">
+                                <span class="editable-text text-xl font-black text-brand-700">350.000đ</span>
+                            </div>
+                            <a href="#" class="editable-link w-full bg-gradient-to-r from-accent-cta to-orange-600 text-white font-extrabold text-sm py-3 px-4 rounded-2xl shadow-md transition flex items-center justify-center gap-2" data-href-type="url">
+                                <i class="fa-solid fa-cart-shopping"></i> <span class="editable-text">MUA NGAY TRÊN SHOPEE</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Add Product Button (Only visible in Edit Mode) -->
+            <div id="add-product-container" class="hidden mt-8 text-center">
+                <button onclick="cloneProductCard()" class="bg-brand-100 hover:bg-brand-200 text-brand-800 border-2 border-brand-400 border-dashed font-bold py-4 px-8 rounded-2xl w-full max-w-md mx-auto transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus text-xl"></i> THÊM SẢN PHẨM MỚI (NHÂN BẢN)
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- MEDIA UPLOAD MODAL -->
+    <div id="media-modal" class="fixed inset-0 bg-black/70 z-[200] hidden items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-[90%] max-w-md p-6 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-lg text-brand-900">Thay Đổi Hình Ảnh / Video</h3>
+                <button onclick="closeMediaModal()" class="text-gray-400 hover:text-red-500 text-2xl leading-none">&times;</button>
+            </div>
+            
+            <!-- Option 1: Upload File -->
+            <div class="mb-6 p-4 border-2 border-dashed border-gray-300 rounded-2xl text-center hover:border-brand-500 hover:bg-brand-50 cursor-pointer transition" onclick="document.getElementById('hidden-file-input').click()">
+                <i class="fa-solid fa-cloud-arrow-up text-4xl text-brand-400 mb-2"></i>
+                <p class="font-bold text-sm text-gray-700">Tải tệp lên từ máy tính/điện thoại</p>
+                <p class="text-xs text-gray-500 mt-1">Hỗ trợ .jpg, .png, .mp4, .webm</p>
+                <input type="file" id="hidden-file-input" class="hidden" accept="image/*,video/*">
+            </div>
+
+            <div class="text-center text-xs text-gray-400 font-bold mb-4 uppercase">HOẶC</div>
+
+            <!-- Option 2: Image/Video URL -->
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Dán đường link (URL) ảnh hoặc video:</label>
+                <input type="text" id="media-url-input" placeholder="https://ví-dụ.com/anh.jpg" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-500">
+            </div>
+
+            <!-- Warning about video sizes -->
+            <div class="bg-amber-50 text-amber-800 text-[10px] p-3 rounded-xl mb-4 border border-amber-200">
+                <i class="fa-solid fa-circle-exclamation mr-1"></i> Lưu ý: Nếu tải lên video dung lượng lớn trực tiếp, việc lưu HTML có thể nặng. Khuyên dùng đường link (URL) cho video dài.
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeMediaModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition">Hủy</button>
+                <button onclick="applyMediaUrl()" class="flex-1 bg-brand-600 text-white font-bold py-3 rounded-xl hover:bg-brand-700 transition">Áp Dụng Tùy Chọn 2</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LINK EDIT MODAL -->
+    <div id="link-modal" class="fixed inset-0 bg-black/70 z-[200] hidden items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-[90%] max-w-sm p-6 shadow-2xl">
+            <h3 class="font-bold text-lg text-brand-900 mb-4">Sửa Đường Dẫn (Link)</h3>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Nhập Link Mới:</label>
+            <input type="text" id="link-url-input" placeholder="https://shopee.vn/..." class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-500 mb-4">
+            <div class="flex gap-3">
+                <button onclick="closeLinkModal()" class="flex-1 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200">Hủy</button>
+                <button onclick="applyLinkUrl()" class="flex-1 bg-green-500 text-white font-bold py-3 rounded-xl hover:bg-green-600">Lưu Link</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-brand-900 text-brand-100 pt-16 pb-8 border-t-[6px] border-brand-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h3 class="font-serif text-3xl font-black text-white mb-4 editable-text">SAMSAM.</h3>
+            <p class="text-sm text-brand-200 leading-relaxed mb-6 editable-text">
+                Thương hiệu thời trang đầm công chúa cao cấp dành cho bé gái.
+            </p>
+            
+            <!-- Footer Social Links -->
+            <div class="flex justify-center items-center gap-4 mb-8">
+                <a href="https://facebook.com" target="_blank" class="editable-link w-10 h-10 rounded-full bg-white/10 hover:bg-[#1877F2] text-white flex items-center justify-center transition" data-href-type="url"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://tiktok.com" target="_blank" class="editable-link w-10 h-10 rounded-full bg-white/10 hover:bg-black text-white flex items-center justify-center transition" data-href-type="url"><i class="fa-brands fa-tiktok"></i></a>
+                <a href="https://zalo.me/0949213036" target="_blank" class="editable-link w-10 h-10 rounded-full bg-white/10 hover:bg-[#0068FF] text-white flex items-center justify-center transition" data-href-type="url"><i class="fa-solid fa-comment-dots"></i></a>
+                <a href="https://vn.shp.ee/evnmc8ih" target="_blank" class="editable-link w-10 h-10 rounded-full bg-white/10 hover:bg-orange-500 text-white flex items-center justify-center transition" data-href-type="url"><i class="fa-solid fa-bag-shopping"></i></a>
+            </div>
+
+            <div class="border-t border-brand-800 pt-8 text-xs text-brand-300 editable-text">
+                &copy; 2026 SAMSAM Princess. Website được thiết kế tùy chỉnh.
+            </div>
+        </div>
+    </footer>
+
+    <!-- CMS JAVASCRIPT LOGIC -->
+    <script>
+        // CMS State
+        let isEditMode = false;
+        let activeMediaTarget = null;
+        let activeLinkTarget = null;
+
+        // --- CHATBOT LOGIC ---
+        function toggleChatbot() {
+            const box = document.getElementById('chatbot-box');
+            if (box.classList.contains('hidden')) {
+                box.classList.remove('hidden');
+                setTimeout(() => {
+                    box.classList.remove('scale-95', 'opacity-0');
+                    box.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            } else {
+                box.classList.remove('scale-100', 'opacity-100');
+                box.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    box.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        function handleChatKey(e) {
+            if (e.key === 'Enter') sendChatMessage();
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const container = document.getElementById('chat-messages');
+            
+            // User message
+            const userMsg = document.createElement('div');
+            userMsg.className = "bg-brand-600 text-white p-3 rounded-2xl shadow-sm max-w-[85%] self-end";
+            userMsg.innerText = text;
+            container.appendChild(userMsg);
+            
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            // Bot auto reply simulation
+            setTimeout(() => {
+                const botMsg = document.createElement('div');
+                botMsg.className = "bg-white p-3 rounded-2xl shadow-sm border border-gray-100 max-w-[85%] self-start text-gray-700";
+                
+                const lower = text.toLowerCase();
+                if (lower.includes('giá') || lower.includes('bao nhiêu')) {
+                    botMsg.innerText = "👑 Dạ các mẫu váy thiết kế SAMSAM dao động từ 300k - 450k tùy mẫu ạ. Mẹ xem chi tiết giá từng mẫu trên web hoặc nhấn nút Mua Shopee để nhận ưu đãi giảm 30% nhé!";
+                } else if (lower.includes('size') || lower.includes('kg') || lower.includes('tuổi')) {
+                    botMsg.innerText = "📏 Dạ SAMSAM có đủ size cho bé từ 2 đến 10 tuổi (10kg - 35kg). Mẹ cho em xin cân nặng chiều cao của bé, em tư vấn chuẩn size ạ!";
+                } else if (lower.includes('zalo') || lower.includes('sđt') || lower.includes('liên hệ')) {
+                    botMsg.innerText = "📞 Mẹ có thể liên hệ trực tiếp Hotline/Zalo: 0949213036 để shop hỗ trợ nhanh nhất nha mẹ!";
+                } else {
+                    botMsg.innerText = "✨ Cảm ơn mẹ đã quan tâm! Để shop tư vấn nhanh và chính xác nhất, mẹ nhắn qua Zalo 0949213036 hoặc Fanpage giúp shop nhé ạ!";
+                }
+                
+                container.appendChild(botMsg);
+                container.scrollTop = container.scrollHeight;
+            }, 800);
+        }
+
+        // --- 1. TOGGLE EDIT MODE ---
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            document.body.classList.toggle('edit-mode', isEditMode);
+            
+            const btnIcon = document.getElementById('edit-icon');
+            const btnText = document.getElementById('edit-text');
+            const btn = document.getElementById('toggle-edit-btn');
+            const addProductContainer = document.getElementById('add-product-container');
+            const deleteBtns = document.querySelectorAll('.delete-product-btn');
+
+            if (isEditMode) {
+                // Turn ON
+                btnIcon.className = "fa-solid fa-toggle-on text-lg";
+                btnText.innerText = "Đang sửa...";
+                btn.className = "bg-red-500 hover:bg-red-400 text-white text-xs font-bold px-4 py-1.5 rounded-full transition flex items-center gap-2 animate-pulse";
+                addProductContainer.classList.remove('hidden');
+                deleteBtns.forEach(b => b.classList.remove('hidden'));
+
+                // Enable ContentEditable
+                document.querySelectorAll('.editable-text').forEach(el => {
+                    el.contentEditable = "true";
+                    el.addEventListener('keydown', preventNewLines);
+                });
+            } else {
+                // Turn OFF
+                btnIcon.className = "fa-solid fa-toggle-off text-lg";
+                btnText.innerText = "Bật chế độ chỉnh sửa";
+                btn.className = "bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-1.5 rounded-full transition flex items-center gap-2";
+                addProductContainer.classList.add('hidden');
+                deleteBtns.forEach(b => b.classList.add('hidden'));
+
+                // Disable ContentEditable
+                document.querySelectorAll('.editable-text').forEach(el => {
+                    el.contentEditable = "false";
+                    el.removeEventListener('keydown', preventNewLines);
+                });
+            }
+        }
+
+        function preventNewLines(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.target.blur();
+            }
+        }
+
+        // --- 2. HANDLE MEDIA EDITING ---
+        document.addEventListener('click', e => {
+            if (!isEditMode) return;
+            
+            const mediaTarget = e.target.closest('.editable-media');
+            if (mediaTarget) {
+                e.preventDefault();
+                e.stopPropagation();
+                activeMediaTarget = mediaTarget;
+                document.getElementById('media-modal').classList.remove('hidden');
+                document.getElementById('media-modal').classList.add('flex');
+            }
+
+            const linkTarget = e.target.closest('.editable-link');
+            if (linkTarget) {
+                e.preventDefault();
+                e.stopPropagation();
+                activeLinkTarget = linkTarget;
+                document.getElementById('link-url-input').value = linkTarget.getAttribute('href') || '';
+                document.getElementById('link-modal').classList.remove('hidden');
+                document.getElementById('link-modal').classList.add('flex');
+            }
+        });
+
+        function closeMediaModal() {
+            document.getElementById('media-modal').classList.add('hidden');
+            document.getElementById('media-modal').classList.remove('flex');
+            activeMediaTarget = null;
+        }
+        function closeLinkModal() {
+            document.getElementById('link-modal').classList.add('hidden');
+            document.getElementById('link-modal').classList.remove('flex');
+            activeLinkTarget = null;
+        }
+
+        document.getElementById('hidden-file-input').addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (!file || !activeMediaTarget) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const src = event.target.result;
+                const isVideo = file.type.startsWith('video/');
+                injectMedia(src, isVideo);
+            };
+            reader.readAsDataURL(file);
+            closeMediaModal();
+            e.target.value = '';
+        });
+
+        function applyMediaUrl() {
+            const url = document.getElementById('media-url-input').value.trim();
+            if (!url || !activeMediaTarget) return;
+
+            const isVideo = url.match(/\.(mp4|webm|ogg)$/i) || false;
+            injectMedia(url, isVideo);
+            closeMediaModal();
+            document.getElementById('media-url-input').value = '';
+        }
+
+        function injectMedia(src, isVideo) {
+            const classes = activeMediaTarget.getAttribute('data-classes');
+            const existingImg = activeMediaTarget.querySelector('img');
+            const existingVid = activeMediaTarget.querySelector('video');
+            
+            if (existingImg) existingImg.remove();
+            if (existingVid) existingVid.remove();
+
+            let newElement;
+            if (isVideo) {
+                newElement = document.createElement('video');
+                newElement.src = src;
+                newElement.autoplay = true;
+                newElement.loop = true;
+                newElement.muted = true;
+                newElement.setAttribute('playsinline', '');
+                newElement.className = classes;
+            } else {
+                newElement = document.createElement('img');
+                newElement.src = src;
+                newElement.className = classes;
+            }
+
+            activeMediaTarget.prepend(newElement);
+        }
+
+        function applyLinkUrl() {
+            const url = document.getElementById('link-url-input').value.trim();
+            if (activeLinkTarget && url) {
+                activeLinkTarget.setAttribute('href', url);
+            }
+            closeLinkModal();
+        }
+
+        function cloneProductCard() {
+            const grid = document.getElementById('product-grid');
+            const cards = grid.querySelectorAll('.product-card');
+            if(cards.length === 0) return;
+
+            const lastCard = cards[cards.length - 1];
+            const newCard = lastCard.cloneNode(true);
+            
+            const titleEl = newCard.querySelector('h3');
+            if(titleEl) titleEl.innerText = "Tên Mẫu Váy Mới (Click sửa)";
+            
+            grid.appendChild(newCard);
+        }
+
+        function deleteProduct(btnElement) {
+            if(confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
+                const card = btnElement.closest('.product-card');
+                if (card) card.remove();
+            }
+        }
+
+        function exportWebsite() {
+            const wasEditMode = isEditMode;
+            if (isEditMode) toggleEditMode();
+
+            const docClone = document.documentElement.cloneNode(true);
+            const htmlContent = "<!DOCTYPE html>\n" + docClone.outerURL ? docClone.outerHTML : docClone.outerHTML;
+
+            const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            
+            const dateStr = new Date().toISOString().replace(/:/g, '-').slice(0, 19);
+            a.download = `samsam-website-${dateStr}.html`;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            if (wasEditMode) toggleEditMode();
+            
+            alert("Đã tải xuống file HTML thành công! Bạn có thể mở file này trên trình duyệt hoặc gửi cho lập trình viên để đưa lên mạng.");
+        }
+    </script>
+</body>
+</html>
